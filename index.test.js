@@ -18,5 +18,11 @@ describe('./musicians endpoint', () => {
         expect(responseData).toHaveLength(seedMusician.length);
         expect(response.statusCode).toBe(200);
 
-    })   
+    })  
+    test("Get a single musician by id", async () => {
+        const response = await request(app).get("/musicians/1");
+        const responseData = JSON.parse(response.text);
+        expect(responseData.name).toBe("Mick Jagger");
+        expect(response.statusCode).toBe(200);
+    })
 })
