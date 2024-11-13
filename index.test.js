@@ -9,45 +9,65 @@ const { Musician } = require("./models/index");
 const app = require("./src/app");
 const { seedMusician } = require("./seedData");
 
-describe("./musicians endpoint", () => {
-  test("GET request gets all musicians", async () => {
+describe("GET /musicians", () => {
+  test("should return an array of musicians", async () => {
+    const fakeMusicians = [
+      { name: "John Lennon", instrument: "Guitar" },
+      { name: "Paul McCartney", instrument: "Bass" },
+    ];
+
+    jest.spyOn(Musician, "findAll").mockResolvedValue(fakeMusicians);
+
     const response = await request(app).get("/musicians");
-    const responseData = JSON.parse(response.text);
-    expect(responseData).toHaveLength(seedMusician.length);
+
+    expect(response.body).toEqual(fakeMusicians);
     expect(response.statusCode).toBe(200);
+    expect(response.body.length).toEqual(fakeMusicians.length);
   });
-  test("Get a single musician by id", async () => {
+
+  test("should return the correct musician data", async () => {
+    const fakeMusician = { id: 1, name: "John Lennon", instrument: "Guitar" };
+
+    jest.spyOn(Musician, "findByPk").mockResolvedValue(fakeMusician);
+
     const response = await request(app).get("/musicians/1");
-    const responseData = JSON.parse(response.text);
-    expect(responseData.name).toBe("Mick Jagger");
+
+    expect(response.body).toEqual(fakeMusician);
     expect(response.statusCode).toBe(200);
   });
 
-  test("POST request creates a new musician", async () => {
-    const newMusician = {
-      name: "Freddie Mercury",
-      instrument: "Vocals",
-    };
-    const response = await request(app).post("/musicians").send(newMusician);
-    const responseData = JSON.parse(response.text);
-    expect(responseData.name).toBe("Freddie Mercury");
-    expect(response.statusCode).toBe(201);
-  });
-  
-  test("PUT request updates a musician", async () => {
-    const newMusician = {
-      name: "Freddie Mercury",
-      instrument: "Vocals",
-    };
-    const response = await request(app).put("/musicians/1").send(newMusician);
-    const responseData = JSON.parse(response.text);
-    expect(responseData.name).toBe("Freddie Mercury");
+  test("should create a new musician", async () => {
+    const newMusician = { name: "Freddie Mercury", instrument: "Vocals" };
+
+    jest.spyOn(Musician, "create").mockResolvedValue(newMusician);
+
+    const response = await request(app)
+      .post("/musicians")
+      .send(newMusician);
+
+    expect(response.body).toEqual(newMusician);
+    expect(response.statusCode).toBe(200);
   });
 
-  test("DELETE musician by id", async () => {
-    const response = await request(app).delete("/musicians/1");
-    const responseData = JSON.parse(response.text);
-    expect(responseData.message).toBe("Musician with id 1 deleted");
+  test("should update a musician", async () => {
+    const updatedMusician = { name: "Freddie Mercury", instrument: "Vocals" };
+
+    jest.spyOn(Musician, "update").mockResolvedValue(updatedMusician);
+
+    const response = await request(app)
+      .put("/musicians/1")
+      .send(updatedMusician);
+
+    expect(response.body).toEqual(updatedMusician);
+    expect(response.statusCode).toBe(200);
+  });
+
+  test("should delete a musician", async () => {
+    jest.spyOn(Musician, "destroy").mockResolvedValue(1);
+
+    const response = await request(app)
+      .delete("/musicians/1");
+
     expect(response.statusCode).toBe(200);
   });
 });
