@@ -5,7 +5,7 @@ execSync("npm run seed");
 
 const request = require("supertest");
 const { db } = require("./db/connection");
-const { Musician } = require("./models/index");
+const { Musician, Band } = require("./models/index");
 const app = require("./src/app");
 const { seedMusician } = require("./seedData");
 
@@ -68,6 +68,34 @@ describe("GET /musicians", () => {
     const response = await request(app)
       .delete("/musicians/1");
 
+    expect(response.statusCode).toBe(200);
+  });
+});
+
+describe("bands routes", () => {
+  test("should return an array of bands", async () => {
+    const fakeBands = [
+      { name: "The Beatles", genre: "Rock" },
+      { name: "Queen", genre: "Rock" },
+    ];
+
+    jest.spyOn(Band, "findAll").mockResolvedValue(fakeBands);
+
+    const response = await request(app).get("/bands");
+
+    expect(response.body).toEqual(fakeBands);
+    expect(response.statusCode).toBe(200);
+    expect(response.body.length).toEqual(fakeBands.length);
+  });
+
+  test("should return the correct band data", async () => {
+    const fakeBand = { id: 1, name: "The Beatles" };
+
+    jest.spyOn(Band, "findByPk").mockResolvedValue(fakeBand);
+
+    const response = await request(app).get("/bands/1");
+
+    expect(response.body).toEqual(fakeBand);
     expect(response.statusCode).toBe(200);
   });
 });
